@@ -1,9 +1,26 @@
 import PySimpleGUI as sg
-import data
 import psycopg2
 import datetime
 import re
 from psycopg2 import OperationalError
+import PySimpleGUI as sg
+from cryptography.fernet import Fernet
+
+key = b'p-ZKrj95zAGa6sigsrl12YrIeeN2a6skEipDFwmbhtw='
+cipher_suite = Fernet(key)
+
+with open('encrypted_data.txt', 'rb') as file:
+    encrypted_host = file.readline().strip()
+    encrypted_port = file.readline().strip()
+    encrypted_name = file.readline().strip()
+    encrypted_login = file.readline().strip()
+    encrypted_pass = file.read()
+
+db_host = cipher_suite.decrypt(encrypted_host).decode()
+db_port = cipher_suite.decrypt(encrypted_port).decode()
+db_name = cipher_suite.decrypt(encrypted_name).decode()
+db_login = cipher_suite.decrypt(encrypted_login).decode()
+db_pass = cipher_suite.decrypt(encrypted_pass).decode()
 
 def create_connection(db_name, db_user, db_password, db_host, db_port):
     connection = None
@@ -20,7 +37,7 @@ def create_connection(db_name, db_user, db_password, db_host, db_port):
         print(f"The error '{e}' occurred")
     return connection
 
-connection = create_connection(data.db_name,data.db_login,data.db_pass, data.db_host, data.db_port)
+connection = create_connection(db_name, db_login, db_pass, db_host, db_port)
 
 
 def check_login(user, userPass):
